@@ -32,8 +32,8 @@ public class Player extends Entity {
             up2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
             down1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
             down2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-walk.png"));
+            right1 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_1.png"));
+            right2 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_2.png"));
             left1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
             left2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
 
@@ -47,6 +47,8 @@ public class Player extends Entity {
 
             downLeft2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
             downRight2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
+
+            right3 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_3.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,11 +99,13 @@ public class Player extends Entity {
 
         // Handle sprite animation
         spriteCounter++;
-        if (spriteCounter > 15) { // Change animation every 15 updates
+        if (spriteCounter > 15) { // Change frame every 15 updates
             if (spriteNum == 1) {
                 spriteNum = 2;
+            } else if (spriteNum == 2) {
+                spriteNum = 3; // Add a third frame
             } else {
-                spriteNum = 1;
+                spriteNum = 1; // Reset to the first frame
             }
             spriteCounter = 0;
         }
@@ -131,6 +135,7 @@ public class Player extends Entity {
             case "right":
                 if (spriteNum == 1) image = right1;
                 else if (spriteNum == 2) image = right2;
+                else if (spriteNum == 3) image = right3;// Third frame for walking right
                 break;
             case "upLeft":
                 if (spriteNum == 1) image = upLeft1;
@@ -148,10 +153,11 @@ public class Player extends Entity {
                 if (spriteNum == 1) image = downRight1;
                 else if (spriteNum == 2) image = downRight2;
                 break;
+
         }
         // CHARACTER SIZE
-        int characterWidth = (int) (gp.tileSize * 1.5);  // Scale width by 1.5x
-        int characterHeight = (int) (gp.tileSize * 1.5); // Scale height by 1.5x
+        int characterWidth = (int) (gp.tileSize * 5);  // Scale width by 1.5x
+        int characterHeight = (int) (gp.tileSize * 5); // Scale height by 1.5x
 
         g2.drawImage(image, x, y, characterWidth, characterHeight, null); // Draw with new size
     }
