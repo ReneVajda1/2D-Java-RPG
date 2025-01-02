@@ -1,5 +1,6 @@
 package main;
 
+import Tiles.TileManager;
 import entity.Player;
 
 import javax.swing.*;
@@ -14,6 +15,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int screenWidth = tileSize * maxScreenCol; // 1920px
     public final int screenHeight = tileSize * maxScreenRow; // 1080px
 
+    TileManager tileM = new TileManager(this);
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
     Player player1 = new Player(this, keyH);
@@ -52,6 +54,9 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
+        // if tiles are second and player first then tiles will block character
+        tileM.draw(g2);
 
         player1.draw(g2);
 
