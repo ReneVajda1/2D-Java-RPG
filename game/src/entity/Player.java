@@ -33,7 +33,7 @@ public class Player extends Entity {
     public void setDefaultValues() {
         x = 100;
         y = 100;
-        speed = 6;
+        speed = 4;
         direction = "right"; // Default facing direction
         currentFrame = 0;
         spriteCounter = 0;
@@ -43,6 +43,7 @@ public class Player extends Entity {
         try {
             System.out.println("Loading spritesheets...");
 
+            // Load idle spritesheets
             idleRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-right.png"));
             idleLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-left.png"));
             idleUpRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-rightUP.png"));
@@ -50,6 +51,7 @@ public class Player extends Entity {
             idleDownRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-rightDown.png"));
             idleDownLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-leftDown.png"));
 
+            // Load walking spritesheets
             walkingRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-right.png"));
             walkingLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-left.png"));
             walkingUpRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-upRight.png"));
@@ -118,15 +120,16 @@ public class Player extends Entity {
 
         loadDirectionalFrames(direction);
 
+        // Update animation frame
         spriteCounter++;
         if (isMoving) {
-            if (spriteCounter > 10) { // Adjust speed of walking animation
-                currentFrame = (currentFrame + 1) % WALKING_FRAME_COUNT;
+            if (spriteCounter > 10) { // Adjust walking speed
+                currentFrame = (currentFrame + 1) % WALKING_FRAME_COUNT; // 0 to 8
                 spriteCounter = 0;
             }
         } else {
-            if (spriteCounter > 20) { // Adjust speed of idle animation
-                currentFrame = (currentFrame + 1) % IDLE_FRAME_COUNT;
+            if (spriteCounter > 20) { // Adjust idle speed
+                currentFrame = (currentFrame + 1) % IDLE_FRAME_COUNT; // 0 to 2
                 spriteCounter = 0;
             }
         }
@@ -168,22 +171,15 @@ public class Player extends Entity {
                     ? walkingFrames[currentFrame]
                     : idleFrames[currentFrame];
 
-            // Scale factor for size adjustment (1.5x)
-            double scaleFactor = 1.5;
+            // Scale the character to 1.5x size
+            int scaledWidth = (int) (FRAME_WIDTH * 1.5);
+            int scaledHeight = (int) (FRAME_HEIGHT * 1.5);
 
-            // Apply the scaling factor when drawing
-            g2.drawImage(
-                    imageToDraw,
-                    x,
-                    y,
-                    (int) (FRAME_WIDTH * scaleFactor),
-                    (int) (FRAME_HEIGHT * scaleFactor),
-                    null
-            );
+            g2.drawImage(imageToDraw, x, y, scaledWidth, scaledHeight, null);
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Animation frame out of bounds: " + currentFrame);
             e.printStackTrace();
-            currentFrame = 0; // Reset the frame to avoid crashing
+            currentFrame = 0; // Reset to the first frame of the current animation
         }
     }
 }
