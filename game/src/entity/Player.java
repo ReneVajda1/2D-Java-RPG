@@ -12,64 +12,57 @@ public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
 
-    // Sprite sheet references
-    BufferedImage walkingSheet;
-    BufferedImage idleSheet;
+    private BufferedImage idleSheet, walkingSheet; // Spritesheets
+    private BufferedImage[] idleFrames, walkingFrames; // Frames for animations
 
-    // Define frame dimensions (adjust according to your sprite sheet dimensions)
-    private final int FRAME_WIDTH = 48; // Width of each frame
-    private final int FRAME_HEIGHT = 48; // Height of each frame
+    private final int IDLE_FRAME_COUNT = 3; // Number of frames in idle spritesheet
+    private final int WALKING_FRAME_COUNT = 9; // Number of frames in walking spritesheet
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
         this.keyH = keyH;
 
         setDefaultValues();
-        getPlayerImage();
+        loadSpritesheets();
+        loadFrames();
     }
 
     public void setDefaultValues() {
-        x = 100; // Initial X position
-        y = 100; // Initial Y position
-        speed = 4; // Initial speed
-        direction = "down"; // Default direction
+        x = 100;
+        y = 100;
+        speed = 4;
+        direction = "idle";
     }
 
-    public void getPlayerImage() {
+    private void loadSpritesheets() {
         try {
-            // Load the sprite sheets
-            walkingSheet = ImageIO.read(getClass().getResourceAsStream("/img/walking-spritesheet.png"));
-            idleSheet = ImageIO.read(getClass().getResourceAsStream("/img/idle-spritesheet.png"));
+            idleSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-right.png"));
+            walkingSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-right.png"));
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void loadFrames() {
+        FRAME_WIDTH = walkingSheet.getWidth() / WALKING_FRAME_COUNT;
+        FRAME_HEIGHT = walkingSheet.getHeight(); // Assuming 1 row
+
+        idleFrames = new BufferedImage[IDLE_FRAME_COUNT];
+        walkingFrames = new BufferedImage[WALKING_FRAME_COUNT];
+
+        for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
+            idleFrames[i] = idleSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        }
+
+        for (int i = 0; i < WALKING_FRAME_COUNT; i++) {
+            walkingFrames[i] = walkingSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
         }
     }
 
     public void update() {
         boolean isMoving = false;
 
-        // Handle movement
-        if (keyH.wPressed && keyH.aPressed) {
-            direction = "upLeft";
-            x -= speed / Math.sqrt(2);
-            y -= speed / Math.sqrt(2);
-            isMoving = true;
-        } else if (keyH.wPressed && keyH.dPressed) {
-            direction = "upRight";
-            x += speed / Math.sqrt(2);
-            y -= speed / Math.sqrt(2);
-            isMoving = true;
-        } else if (keyH.sPressed && keyH.aPressed) {
-            direction = "downLeft";
-            x -= speed / Math.sqrt(2);
-            y += speed / Math.sqrt(2);
-            isMoving = true;
-        } else if (keyH.sPressed && keyH.dPressed) {
-            direction = "downRight";
-            x += speed / Math.sqrt(2);
-            y += speed / Math.sqrt(2);
-            isMoving = true;
-        } else if (keyH.wPressed) {
+        if (keyH.wPressed) {
             direction = "up";
             y -= speed;
             isMoving = true;
@@ -87,43 +80,20 @@ public class Player extends Entity {
             isMoving = true;
         }
 
-        // Handle animation
+        // Update animation frame
         spriteCounter++;
-        if (spriteCounter > 15) {
-            spriteNum++;
-            if (spriteNum > 3) spriteNum = 1; // Loop through frames
+        if (spriteCounter > 10) { // Change frame every 10 updates
+            currentFrame = (currentFrame + 1) % (isMoving ? WALKING_FRAME_COUNT : IDLE_FRAME_COUNT);
             spriteCounter = 0;
-        }
-
-        // Reset to idle if not moving
-        if (!isMoving) {
-            spriteNum = 1; // Default to the first idle frame
         }
     }
 
     public void draw(Graphics2D g2) {
-        BufferedImage currentFrame = null;
+        BufferedImage imageToDraw = isMoving() ? walkingFrames[currentFrame] : idleFrames[currentFrame];
+        g2.drawImage(imageToDraw, x, y, FRAME_WIDTH, FRAME_HEIGHT, null);
+    }
 
-        // Extract frames based on direction and spriteNum
-        switch (direction) {
-            case "up":
-                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
-                break;
-            case "down":
-                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
-                break;
-            case "left":
-                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, 2 * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
-                break;
-            case "right":
-                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, 3 * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
-                break;
-            default:
-                currentFrame = idleSheet.getSubimage(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-                break;
-        }
-
-        // Draw the current frame
-        g2.drawImage(currentFrame, x, y, gp.tileSize, gp.tileSize, null);
+    private boolean isMoving() {
+        return keyH.wPressed || keyH.sPressed || keyH.aPressed || keyH.dPressed;
     }
 }

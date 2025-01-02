@@ -3,14 +3,15 @@ package entity;
 import java.awt.image.BufferedImage;
 
 public class Entity {
-    public int x, y; // Position
-    public int speed; // Speed of movement
+    public int x, y; // Character's position
+    public int speed; // Movement speed
+    public String direction; // Current movement direction
 
-    // Sprite sheets for animations
-    public BufferedImage walkingSheet;
-    public BufferedImage idleSheet;
+    // Animation fields
+    public int spriteCounter = 0; // Counter to control animation frame updates
+    public int currentFrame = 0; // Current frame in the animation
 
-    public String direction; // Current direction
-    public int spriteCounter = 0; // Timer for frame switching
-    public int spriteNum = 1; // Current frame number
+    // Spritesheet dimensions
+    public int FRAME_WIDTH; // Width of each frame
+    public int FRAME_HEIGHT; // Height of each frame
 }
