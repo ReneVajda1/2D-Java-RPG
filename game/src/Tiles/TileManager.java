@@ -49,19 +49,20 @@ public void loadMap() {
         int col = 0;
         int row = 0;
 
-        while (col < gp.maxScreenCol && row < gp.maxScreenRow) {
+        while (row < gp.maxScreenRow) {
             String line = br.readLine();
-            while (col < gp.maxScreenCol) {
-                String[] numbers = line.split(" ");
+            if (line == null) break;
+
+            String[] numbers = line.split(" ");
+            for (col = 0; col < numbers.length; col++) {
                 int num = Integer.parseInt(numbers[col]);
                 mapTileNum[col][row] = num;
-                col++;
             }
-            if (col == gp.maxScreenCol) {
-                col = 0;
-                row++;
-            }
+
+            col = 0; // Reset column for the next row
+            row++;   // Move to the next row
         }
+
         br.close();
     } catch (Exception e) {
         e.printStackTrace();
