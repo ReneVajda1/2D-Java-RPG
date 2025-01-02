@@ -9,13 +9,22 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Player extends Entity {
-    GamePanel gp; // Reference to GamePanel
-    KeyHandler keyH; // Reference to KeyHandler
+    GamePanel gp;
+    KeyHandler keyH;
+
+    // Sprite sheet references
+    BufferedImage walkingSheet;
+    BufferedImage idleSheet;
+
+    // Define frame dimensions (adjust according to your sprite sheet dimensions)
+    private final int FRAME_WIDTH = 48; // Width of each frame
+    private final int FRAME_HEIGHT = 48; // Height of each frame
 
     public Player(GamePanel gp, KeyHandler keyH) {
-        this.gp = gp; // Initialize GamePanel reference
-        this.keyH = keyH; // Initialize KeyHandler reference
-        setDefaultValues(); // Set initial player values
+        this.gp = gp;
+        this.keyH = keyH;
+
+        setDefaultValues();
         getPlayerImage();
     }
 
@@ -23,61 +32,42 @@ public class Player extends Entity {
         x = 100; // Initial X position
         y = 100; // Initial Y position
         speed = 4; // Initial speed
-        direction = "down";
+        direction = "down"; // Default direction
     }
-    // this makes SPRITE IMAGES POSSIBLE
-    public void getPlayerImage(){
+
+    public void getPlayerImage() {
         try {
-            up1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-walk.png"));
-            up2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
-            down1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_2.png"));
-            left1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-
-            upLeft1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            upRight1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-            downLeft1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            downRight1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-
-            upLeft2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            upRight2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
-
-            downLeft2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            downRight2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
-
-            right3 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_3.png"));
+            // Load the sprite sheets
+            walkingSheet = ImageIO.read(getClass().getResourceAsStream("/img/walking-spritesheet.png"));
+            idleSheet = ImageIO.read(getClass().getResourceAsStream("/img/idle-spritesheet.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void update() {
-        // Adjust diagonal movement speed
-        double diagonalSpeed = speed / Math.sqrt(2);
 
-        // Movement logic
+    public void update() {
         boolean isMoving = false;
+
+        // Handle movement
         if (keyH.wPressed && keyH.aPressed) {
             direction = "upLeft";
-            x -= diagonalSpeed;
-            y -= diagonalSpeed;
+            x -= speed / Math.sqrt(2);
+            y -= speed / Math.sqrt(2);
             isMoving = true;
         } else if (keyH.wPressed && keyH.dPressed) {
             direction = "upRight";
-            x += diagonalSpeed;
-            y -= diagonalSpeed;
+            x += speed / Math.sqrt(2);
+            y -= speed / Math.sqrt(2);
             isMoving = true;
         } else if (keyH.sPressed && keyH.aPressed) {
             direction = "downLeft";
-            x -= diagonalSpeed;
-            y += diagonalSpeed;
+            x -= speed / Math.sqrt(2);
+            y += speed / Math.sqrt(2);
             isMoving = true;
         } else if (keyH.sPressed && keyH.dPressed) {
             direction = "downRight";
-            x += diagonalSpeed;
-            y += diagonalSpeed;
+            x += speed / Math.sqrt(2);
+            y += speed / Math.sqrt(2);
             isMoving = true;
         } else if (keyH.wPressed) {
             direction = "up";
@@ -97,68 +87,43 @@ public class Player extends Entity {
             isMoving = true;
         }
 
-        // Handle sprite animation
+        // Handle animation
         spriteCounter++;
-        if (spriteCounter > 15) { // Change frame every 15 updates
-            if (spriteNum == 1) {
-                spriteNum = 2;
-            } else if (spriteNum == 2) {
-                spriteNum = 3; // Add a third frame
-            } else {
-                spriteNum = 1; // Reset to the first frame
-            }
+        if (spriteCounter > 15) {
+            spriteNum++;
+            if (spriteNum > 3) spriteNum = 1; // Loop through frames
             spriteCounter = 0;
         }
 
-        // If not moving, set to idle pose
+        // Reset to idle if not moving
         if (!isMoving) {
-            spriteNum = 1; // Default idle pose
+            spriteNum = 1; // Default to the first idle frame
         }
     }
-    public void draw(Graphics2D g2) {
-        BufferedImage image = null;
 
-        // Switch images based on direction and sprite number
+    public void draw(Graphics2D g2) {
+        BufferedImage currentFrame = null;
+
+        // Extract frames based on direction and spriteNum
         switch (direction) {
             case "up":
-                if (spriteNum == 1) image = up1;
-                else if (spriteNum == 2) image = up2;
+                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
                 break;
             case "down":
-                if (spriteNum == 1) image = down1;
-                else if (spriteNum == 2) image = down2;
+                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
                 break;
             case "left":
-                if (spriteNum == 1) image = left1;
-                else if (spriteNum == 2) image = left2;
+                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, 2 * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
                 break;
             case "right":
-                if (spriteNum == 1) image = right1;
-                else if (spriteNum == 2) image = right2;
-                else if (spriteNum == 3) image = right3;// Third frame for walking right
+                currentFrame = walkingSheet.getSubimage((spriteNum - 1) * FRAME_WIDTH, 3 * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
                 break;
-            case "upLeft":
-                if (spriteNum == 1) image = upLeft1;
-                else if (spriteNum == 2) image = upLeft2;
+            default:
+                currentFrame = idleSheet.getSubimage(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
                 break;
-            case "upRight":
-                if (spriteNum == 1) image = upRight1;
-                else if (spriteNum == 2) image = upRight2;
-                break;
-            case "downLeft":
-                if (spriteNum == 1) image = downLeft1;
-                else if (spriteNum == 2) image = downLeft2;
-                break;
-            case "downRight":
-                if (spriteNum == 1) image = downRight1;
-                else if (spriteNum == 2) image = downRight2;
-                break;
-
         }
-        // CHARACTER SIZE
-        int characterWidth = (int) (gp.tileSize * 5);  // Scale width by 1.5x
-        int characterHeight = (int) (gp.tileSize * 5); // Scale height by 1.5x
 
-        g2.drawImage(image, x, y, characterWidth, characterHeight, null); // Draw with new size
+        // Draw the current frame
+        g2.drawImage(currentFrame, x, y, gp.tileSize, gp.tileSize, null);
     }
 }
