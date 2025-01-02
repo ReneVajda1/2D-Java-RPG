@@ -9,74 +9,93 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Player extends Entity {
-    GamePanel gp; // Reference to GamePanel
-    KeyHandler keyH; // Reference to KeyHandler
+    GamePanel gp;
+    KeyHandler keyH;
+
+    private BufferedImage idleRightSheet, idleLeftSheet, idleUpRightSheet, idleUpLeftSheet,
+            idleDownRightSheet, idleDownLeftSheet, walkingRightSheet, walkingLeftSheet,
+            walkingUpRightSheet, walkingUpLeftSheet, walkingDownRightSheet, walkingDownLeftSheet;
+
+    private BufferedImage[] idleFrames, walkingFrames;
+
+    private final int IDLE_FRAME_COUNT = 3; // Number of frames in idle spritesheet
+    private final int WALKING_FRAME_COUNT = 9; // Number of frames in walking spritesheet
 
     public Player(GamePanel gp, KeyHandler keyH) {
-        this.gp = gp; // Initialize GamePanel reference
-        this.keyH = keyH; // Initialize KeyHandler reference
-        setDefaultValues(); // Set initial player values
-        getPlayerImage();
+        this.gp = gp;
+        this.keyH = keyH;
+
+        setDefaultValues();
+        loadSpritesheets();
+        loadFrames();
     }
 
     public void setDefaultValues() {
-        x = 100; // Initial X position
-        y = 100; // Initial Y position
-        speed = 4; // Initial speed
-        direction = "down";
+        x = 100;
+        y = 100;
+        speed = 6;
+        direction = "right"; // Default facing direction
+        currentFrame = 0;
+        spriteCounter = 0;
     }
-    // this makes SPRITE IMAGES POSSIBLE
-    public void getPlayerImage(){
+
+    private void loadSpritesheets() {
         try {
-            up1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-walk.png"));
-            up2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
-            down1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_2.png"));
-            left1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
+            System.out.println("Loading spritesheets...");
 
-            upLeft1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            upRight1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
-            downLeft1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            downRight1 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-walk.png"));
+            idleRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-right.png"));
+            idleLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-left.png"));
+            idleUpRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-rightUP.png"));
+            idleUpLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-leftUP.png"));
+            idleDownRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-rightDown.png"));
+            idleDownLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-leftDown.png"));
 
-            upLeft2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            upRight2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
+            walkingRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-right.png"));
+            walkingLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-left.png"));
+            walkingUpRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-upRight.png"));
+            walkingUpLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-upLeft.png"));
+            walkingDownRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-downRight.png"));
+            walkingDownLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-downLeft.png"));
 
-            downLeft2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-left-idle.png"));
-            downRight2 = ImageIO.read(getClass().getResourceAsStream("/img/barb-right-idle.png"));
-
-            right3 = ImageIO.read(getClass().getResourceAsStream("/img/rWALK_3.png"));
+            System.out.println("All spritesheets loaded successfully!");
         } catch (IOException e) {
+            System.out.println("Failed to load a spritesheet. Check paths.");
             e.printStackTrace();
         }
     }
-    public void update() {
-        // Adjust diagonal movement speed
-        double diagonalSpeed = speed / Math.sqrt(2);
 
-        // Movement logic
+    private void loadFrames() {
+        FRAME_WIDTH = walkingRightSheet.getWidth() / WALKING_FRAME_COUNT;
+        FRAME_HEIGHT = walkingRightSheet.getHeight(); // Assuming 1 row for all spritesheets
+
+        idleFrames = new BufferedImage[IDLE_FRAME_COUNT];
+        walkingFrames = new BufferedImage[WALKING_FRAME_COUNT];
+
+        loadDirectionalFrames("right"); // Default to right-facing animations
+    }
+
+    public void update() {
+        double diagonalSpeed = speed / Math.sqrt(2); // Adjust diagonal speed
         boolean isMoving = false;
-        if (keyH.wPressed && keyH.aPressed) {
-            direction = "upLeft";
-            x -= diagonalSpeed;
-            y -= diagonalSpeed;
-            isMoving = true;
-        } else if (keyH.wPressed && keyH.dPressed) {
+
+        if (keyH.wPressed && keyH.dPressed) {
             direction = "upRight";
             x += diagonalSpeed;
             y -= diagonalSpeed;
             isMoving = true;
-        } else if (keyH.sPressed && keyH.aPressed) {
-            direction = "downLeft";
+        } else if (keyH.wPressed && keyH.aPressed) {
+            direction = "upLeft";
             x -= diagonalSpeed;
-            y += diagonalSpeed;
+            y -= diagonalSpeed;
             isMoving = true;
         } else if (keyH.sPressed && keyH.dPressed) {
             direction = "downRight";
             x += diagonalSpeed;
+            y += diagonalSpeed;
+            isMoving = true;
+        } else if (keyH.sPressed && keyH.aPressed) {
+            direction = "downLeft";
+            x -= diagonalSpeed;
             y += diagonalSpeed;
             isMoving = true;
         } else if (keyH.wPressed) {
@@ -97,68 +116,74 @@ public class Player extends Entity {
             isMoving = true;
         }
 
-        // Handle sprite animation
-        spriteCounter++;
-        if (spriteCounter > 15) { // Change frame every 15 updates
-            if (spriteNum == 1) {
-                spriteNum = 2;
-            } else if (spriteNum == 2) {
-                spriteNum = 3; // Add a third frame
-            } else {
-                spriteNum = 1; // Reset to the first frame
-            }
-            spriteCounter = 0;
-        }
+        loadDirectionalFrames(direction);
 
-        // If not moving, set to idle pose
-        if (!isMoving) {
-            spriteNum = 1; // Default idle pose
+        spriteCounter++;
+        if (isMoving) {
+            if (spriteCounter > 10) { // Adjust speed of walking animation
+                currentFrame = (currentFrame + 1) % WALKING_FRAME_COUNT;
+                spriteCounter = 0;
+            }
+        } else {
+            if (spriteCounter > 20) { // Adjust speed of idle animation
+                currentFrame = (currentFrame + 1) % IDLE_FRAME_COUNT;
+                spriteCounter = 0;
+            }
         }
     }
-    public void draw(Graphics2D g2) {
-        BufferedImage image = null;
 
-        // Switch images based on direction and sprite number
-        switch (direction) {
-            case "up":
-                if (spriteNum == 1) image = up1;
-                else if (spriteNum == 2) image = up2;
-                break;
-            case "down":
-                if (spriteNum == 1) image = down1;
-                else if (spriteNum == 2) image = down2;
-                break;
-            case "left":
-                if (spriteNum == 1) image = left1;
-                else if (spriteNum == 2) image = left2;
-                break;
-            case "right":
-                if (spriteNum == 1) image = right1;
-                else if (spriteNum == 2) image = right2;
-                else if (spriteNum == 3) image = right3;// Third frame for walking right
-                break;
-            case "upLeft":
-                if (spriteNum == 1) image = upLeft1;
-                else if (spriteNum == 2) image = upLeft2;
-                break;
-            case "upRight":
-                if (spriteNum == 1) image = upRight1;
-                else if (spriteNum == 2) image = upRight2;
-                break;
-            case "downLeft":
-                if (spriteNum == 1) image = downLeft1;
-                else if (spriteNum == 2) image = downLeft2;
-                break;
-            case "downRight":
-                if (spriteNum == 1) image = downRight1;
-                else if (spriteNum == 2) image = downRight2;
-                break;
-
+    private void loadDirectionalFrames(String direction) {
+        try {
+            if (direction.equals("right")) {
+                loadFramesFromSpritesheet(idleRightSheet, walkingRightSheet);
+            } else if (direction.equals("left")) {
+                loadFramesFromSpritesheet(idleLeftSheet, walkingLeftSheet);
+            } else if (direction.equals("upRight")) {
+                loadFramesFromSpritesheet(idleUpRightSheet, walkingUpRightSheet);
+            } else if (direction.equals("upLeft")) {
+                loadFramesFromSpritesheet(idleUpLeftSheet, walkingUpLeftSheet);
+            } else if (direction.equals("downRight")) {
+                loadFramesFromSpritesheet(idleDownRightSheet, walkingDownRightSheet);
+            } else if (direction.equals("downLeft")) {
+                loadFramesFromSpritesheet(idleDownLeftSheet, walkingDownLeftSheet);
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading frames for direction: " + direction);
+            e.printStackTrace();
         }
-        // CHARACTER SIZE
-        int characterWidth = (int) (gp.tileSize * 5);  // Scale width by 1.5x
-        int characterHeight = (int) (gp.tileSize * 5); // Scale height by 1.5x
+    }
 
-        g2.drawImage(image, x, y, characterWidth, characterHeight, null); // Draw with new size
+    private void loadFramesFromSpritesheet(BufferedImage idleSheet, BufferedImage walkingSheet) {
+        for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
+            idleFrames[i] = idleSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        }
+        for (int i = 0; i < WALKING_FRAME_COUNT; i++) {
+            walkingFrames[i] = walkingSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        }
+    }
+
+    public void draw(Graphics2D g2) {
+        try {
+            BufferedImage imageToDraw = (keyH.wPressed || keyH.aPressed || keyH.sPressed || keyH.dPressed)
+                    ? walkingFrames[currentFrame]
+                    : idleFrames[currentFrame];
+
+            // Scale factor for size adjustment (1.5x)
+            double scaleFactor = 1.5;
+
+            // Apply the scaling factor when drawing
+            g2.drawImage(
+                    imageToDraw,
+                    x,
+                    y,
+                    (int) (FRAME_WIDTH * scaleFactor),
+                    (int) (FRAME_HEIGHT * scaleFactor),
+                    null
+            );
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Animation frame out of bounds: " + currentFrame);
+            e.printStackTrace();
+            currentFrame = 0; // Reset the frame to avoid crashing
+        }
     }
 }
