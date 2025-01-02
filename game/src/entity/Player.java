@@ -33,7 +33,7 @@ public class Player extends Entity {
     public void setDefaultValues() {
         x = 100;
         y = 100;
-        speed = 4;
+        speed = 6;
         direction = "right"; // Default facing direction
         currentFrame = 0;
         spriteCounter = 0;
@@ -43,7 +43,6 @@ public class Player extends Entity {
         try {
             System.out.println("Loading spritesheets...");
 
-            // Load idle spritesheets
             idleRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-right.png"));
             idleLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-left.png"));
             idleUpRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-rightUP.png"));
@@ -51,7 +50,6 @@ public class Player extends Entity {
             idleDownRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-rightDown.png"));
             idleDownLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-idle-leftDown.png"));
 
-            // Load walking spritesheets
             walkingRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-right.png"));
             walkingLeftSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-left.png"));
             walkingUpRightSheet = ImageIO.read(getClass().getResourceAsStream("/img/b-walk-upRight.png"));
@@ -78,99 +76,110 @@ public class Player extends Entity {
 
     public void update() {
         double diagonalSpeed = speed / Math.sqrt(2); // Adjust diagonal speed
+        boolean isMoving = false;
 
         if (keyH.wPressed && keyH.dPressed) {
             direction = "upRight";
             x += diagonalSpeed;
             y -= diagonalSpeed;
+            isMoving = true;
         } else if (keyH.wPressed && keyH.aPressed) {
             direction = "upLeft";
             x -= diagonalSpeed;
             y -= diagonalSpeed;
+            isMoving = true;
         } else if (keyH.sPressed && keyH.dPressed) {
             direction = "downRight";
             x += diagonalSpeed;
             y += diagonalSpeed;
+            isMoving = true;
         } else if (keyH.sPressed && keyH.aPressed) {
             direction = "downLeft";
             x -= diagonalSpeed;
             y += diagonalSpeed;
+            isMoving = true;
         } else if (keyH.wPressed) {
             direction = "up";
             y -= speed;
+            isMoving = true;
         } else if (keyH.sPressed) {
             direction = "down";
             y += speed;
+            isMoving = true;
         } else if (keyH.aPressed) {
             direction = "left";
             x -= speed;
+            isMoving = true;
         } else if (keyH.dPressed) {
             direction = "right";
             x += speed;
-        } else {
-            direction = "idle";
+            isMoving = true;
         }
 
         loadDirectionalFrames(direction);
 
-        // Update animation frame
         spriteCounter++;
-        if (spriteCounter > 10) { // Change frame every 10 updates
-            currentFrame = (currentFrame + 1) % (direction.equals("idle") ? IDLE_FRAME_COUNT : WALKING_FRAME_COUNT);
-            spriteCounter = 0;
+        if (isMoving) {
+            if (spriteCounter > 10) { // Adjust speed of walking animation
+                currentFrame = (currentFrame + 1) % WALKING_FRAME_COUNT;
+                spriteCounter = 0;
+            }
+        } else {
+            if (spriteCounter > 20) { // Adjust speed of idle animation
+                currentFrame = (currentFrame + 1) % IDLE_FRAME_COUNT;
+                spriteCounter = 0;
+            }
         }
     }
 
     private void loadDirectionalFrames(String direction) {
         try {
-            BufferedImage currentIdleSheet = null;
-            BufferedImage currentWalkingSheet = null;
-
-            switch (direction) {
-                case "right":
-                    currentIdleSheet = idleRightSheet;
-                    currentWalkingSheet = walkingRightSheet;
-                    break;
-                case "left":
-                    currentIdleSheet = idleLeftSheet;
-                    currentWalkingSheet = walkingLeftSheet;
-                    break;
-                case "upRight":
-                    currentIdleSheet = idleUpRightSheet;
-                    currentWalkingSheet = walkingUpRightSheet;
-                    break;
-                case "upLeft":
-                    currentIdleSheet = idleUpLeftSheet;
-                    currentWalkingSheet = walkingUpLeftSheet;
-                    break;
-                case "downRight":
-                    currentIdleSheet = idleDownRightSheet;
-                    currentWalkingSheet = walkingDownRightSheet;
-                    break;
-                case "downLeft":
-                    currentIdleSheet = idleDownLeftSheet;
-                    currentWalkingSheet = walkingDownLeftSheet;
-                    break;
-            }
-
-            if (currentIdleSheet != null && currentWalkingSheet != null) {
-                for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
-                    idleFrames[i] = currentIdleSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
-                }
-                for (int i = 0; i < WALKING_FRAME_COUNT; i++) {
-                    walkingFrames[i] = currentWalkingSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
-                }
+            if (direction.equals("right")) {
+                loadFramesFromSpritesheet(idleRightSheet, walkingRightSheet);
+            } else if (direction.equals("left")) {
+                loadFramesFromSpritesheet(idleLeftSheet, walkingLeftSheet);
+            } else if (direction.equals("upRight")) {
+                loadFramesFromSpritesheet(idleUpRightSheet, walkingUpRightSheet);
+            } else if (direction.equals("upLeft")) {
+                loadFramesFromSpritesheet(idleUpLeftSheet, walkingUpLeftSheet);
+            } else if (direction.equals("downRight")) {
+                loadFramesFromSpritesheet(idleDownRightSheet, walkingDownRightSheet);
+            } else if (direction.equals("downLeft")) {
+                loadFramesFromSpritesheet(idleDownLeftSheet, walkingDownLeftSheet);
             }
         } catch (Exception e) {
-            System.out.println("Error loading directional frames for: " + direction);
+            System.out.println("Error loading frames for direction: " + direction);
             e.printStackTrace();
+        }
+    }
+
+    private void loadFramesFromSpritesheet(BufferedImage idleSheet, BufferedImage walkingSheet) {
+        for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
+            idleFrames[i] = idleSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        }
+        for (int i = 0; i < WALKING_FRAME_COUNT; i++) {
+            walkingFrames[i] = walkingSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
         }
     }
 
     public void draw(Graphics2D g2) {
         try {
-            BufferedImage imageToDraw = direction.equals("idle") ? idleFrames[currentFrame] : walkingFrames[currentFrame];
-            g2.drawImage(imageToDraw, x, y, null);
+            BufferedImage imageToDraw = (keyH.wPressed || keyH.aPressed || keyH.sPressed || keyH.dPressed)
+                    ? walkingFrames[currentFrame]
+                    : idleFrames[currentFrame];
+
+            // Scale factor for size adjustment (1.5x)
+            double scaleFactor = 1.5;
+
+            // Apply the scaling factor when drawing
+            g2.drawImage(
+                    imageToDraw,
+                    x,
+                    y,
+                    (int) (FRAME_WIDTH * scaleFactor),
+                    (int) (FRAME_HEIGHT * scaleFactor),
+                    null
+            );
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Animation frame out of bounds: " + currentFrame);
             e.printStackTrace();

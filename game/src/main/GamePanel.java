@@ -9,10 +9,10 @@ public class GamePanel extends JPanel implements Runnable {
     final int originalTileSize = 16; // 16x16 tile
     final int scale = 3;
     public final int tileSize = originalTileSize * scale; // 48x48 tile
-    public final int maxScreenCol = 16; // Columns
-    public final int maxScreenRow = 12; // Rows
-    public final int screenWidth = tileSize * maxScreenCol; // 768px
-    public final int screenHeight = tileSize * maxScreenRow; // 576px
+    public final int maxScreenCol = 40; // 1920px width
+    public final int maxScreenRow = 22; // 1080px height
+    public final int screenWidth = tileSize * maxScreenCol; // 1920px
+    public final int screenHeight = tileSize * maxScreenRow; // 1080px
 
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
@@ -52,7 +52,9 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
         player1.draw(g2);
+
         g2.dispose();
     }
 }
