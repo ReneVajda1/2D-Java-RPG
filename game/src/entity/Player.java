@@ -21,18 +21,22 @@ public class Player extends Entity {
     private final int IDLE_FRAME_COUNT = 3; // Number of frames in idle spritesheet
     private final int WALKING_FRAME_COUNT = 9; // Number of frames in walking spritesheet
 
+    public final int screenX;
+    public final int screenY;
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
         this.keyH = keyH;
 
+        screenX =gp.screenWidth/2 - (gp.tileSize/2); // this returns halfway point of screen
+        screenY = gp.screenHeight/2- (gp.tileSize/2);
         setDefaultValues();
         loadSpritesheets();
         loadFrames();
     }
 
     public void setDefaultValues() {
-        x = 100;
-        y = 100;
+        worldX = gp.tileSize*23;
+        worldY = gp.tileSize*21;
         speed = 4;
         direction = "right"; // Default facing direction
         currentFrame = 0;
@@ -82,39 +86,39 @@ public class Player extends Entity {
 
         if (keyH.wPressed && keyH.dPressed) {
             direction = "upRight";
-            x += diagonalSpeed;
-            y -= diagonalSpeed;
+            worldX += diagonalSpeed;
+            worldY -= diagonalSpeed;
             isMoving = true;
         } else if (keyH.wPressed && keyH.aPressed) {
             direction = "upLeft";
-            x -= diagonalSpeed;
-            y -= diagonalSpeed;
+            worldX -= diagonalSpeed;
+            worldY -= diagonalSpeed;
             isMoving = true;
         } else if (keyH.sPressed && keyH.dPressed) {
             direction = "downRight";
-            x += diagonalSpeed;
-            y += diagonalSpeed;
+            worldX += diagonalSpeed;
+            worldY += diagonalSpeed;
             isMoving = true;
         } else if (keyH.sPressed && keyH.aPressed) {
             direction = "downLeft";
-            x -= diagonalSpeed;
-            y += diagonalSpeed;
+            worldX -= diagonalSpeed;
+            worldY += diagonalSpeed;
             isMoving = true;
         } else if (keyH.wPressed) {
             direction = "up";
-            y -= speed;
+            worldY -= speed;
             isMoving = true;
         } else if (keyH.sPressed) {
             direction = "down";
-            y += speed;
+            worldY += speed;
             isMoving = true;
         } else if (keyH.aPressed) {
             direction = "left";
-            x -= speed;
+            worldX -= speed;
             isMoving = true;
         } else if (keyH.dPressed) {
             direction = "right";
-            x += speed;
+            worldX += speed;
             isMoving = true;
         }
 
@@ -175,7 +179,7 @@ public class Player extends Entity {
             int scaledWidth = (int) (FRAME_WIDTH * 1.5);
             int scaledHeight = (int) (FRAME_HEIGHT * 1.5);
 
-            g2.drawImage(imageToDraw, x, y, scaledWidth, scaledHeight, null);
+            g2.drawImage(imageToDraw, screenX, screenY, scaledWidth, scaledHeight, null);
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Animation frame out of bounds: " + currentFrame);
             e.printStackTrace();
