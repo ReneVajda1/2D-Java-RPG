@@ -27,8 +27,8 @@ public class Player extends Entity {
         this.gp = gp;
         this.keyH = keyH;
 
-        screenX =gp.screenWidth/2 - (gp.tileSize/2); // this returns halfway point of screen
-        screenY = gp.screenHeight/2- (gp.tileSize/2);
+        screenX =gp.screenWidth / 2 - (gp.tileSize/2); // this returns halfway point of screen
+        screenY = gp.screenHeight / 2 - (gp.tileSize/2);
         setDefaultValues();
         loadSpritesheets();
         loadFrames();
